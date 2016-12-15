@@ -1,0 +1,9 @@
+# Adapt usando 28kb de RAM externa
+
+ARCH=m68hc12
+
+CPPFLAGS += -DADAPT_RAM28
+
+# Use memory layout specific
+LDFLAGS += -L$(BASEDIR)/config/m68hc12-adapt-ram28
+

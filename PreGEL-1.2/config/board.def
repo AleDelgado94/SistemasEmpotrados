@@ -1,0 +1,8 @@
+#
+# Define the target board the examples will be run on
+# This configures automatically:
+#   - the compiler flags,
+#   - the linker script (memory.x basically)
+#
+#BOARD=m68hc11-32k
+BOARD=m68hc12-adapt-ram28

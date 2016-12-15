@@ -1,0 +1,8 @@
+# 68HC11 EBCS board (8K ram)
+
+ARCH=m68hc11
+
+CPPFLAGS +=-DEBCS
+
+# Use memory layout specific this board
+LDFLAGS += -Wl,-m,$(ARCH)elfb -L$(BASEDIR)/config/$(BOARD)

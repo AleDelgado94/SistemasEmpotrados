@@ -1,0 +1,8 @@
+# 68HC11 32K ram + 32K rom
+
+ARCH=m68hc11
+
+CPPFLAGS +=-DM6811_32K
+
+# Use memory layout specific this board
+LDFLAGS += -Wl,-m,$(ARCH)elfb -L$(BASEDIR)/config/$(BOARD)

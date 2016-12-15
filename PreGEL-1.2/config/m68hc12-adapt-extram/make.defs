@@ -1,0 +1,8 @@
+# Axiom Manufacturing CMD12 Board Configuration
+
+ARCH=m68hc12
+
+CPPFLAGS += -DADAPT_EXT_RAM
+
+# Use memory layout specific to CMD12 board
+LDFLAGS += -L$(BASEDIR)/config/m68hc12-adapt-extram

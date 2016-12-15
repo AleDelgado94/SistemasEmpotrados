@@ -1,0 +1,273 @@
+head	1.4;
+access;
+symbols;
+locks; strict;
+comment	@# @;
+
+
+1.4
+date	2014.03.26.16.57.04;	author alberto;	state Exp;
+branches;
+next	1.3;
+
+1.3
+date	2008.03.31.10.04.15;	author alberto;	state Exp;
+branches;
+next	1.2;
+
+1.2
+date	2008.03.31.09.10.27;	author alberto;	state Exp;
+branches;
+next	1.1;
+
+1.1
+date	2008.01.21.14.34.56;	author alberto;	state Exp;
+branches;
+next	;
+
+
+desc
+@@
+
+
+1.4
+log
+@Generamos S19 con registros de 32 bytes.
+@
+text
+@
+#
+# These programs are in general installed under /usr/bin if you
+# installed the RPMS packages and in /usr/local/bin if you build
+# the cross chain yourself.
+#
+DEVC_PREFIX=m68hc11-
+CC=$(DEVC_PREFIX)gcc
+AS=$(DEVC_PREFIX)as
+AR=$(DEVC_PREFIX)ar
+LD=$(DEVC_PREFIX)ld
+SIZE=$(DEVC_PREFIX)size
+OBJCOPY=$(DEVC_PREFIX)objcopy
+RM=rm -f
+
+#HOST_CC=gcc
+#HOST_CFLAGS=-g -O -Wall
+#HOST_LDLIBS=-L/usr/local/lib -lbfd -liberty
+
+# #########################################################################
+# 
+# Before compiling, you can configure the following make variables:
+#
+#   TARGET_PROC
+#   TARGET_INT
+#   DEBUG
+#   OPT
+#   WARN
+#
+# You can also do (as an example):
+#
+#   make TARGET_INT= OPT="-Os -fomit-frame-pointer DEBUG=
+#
+# to avoid to change this file.
+#
+# Configure for a 68hc11 with 16-bit int
+# Make sure to pass these options when compiling AND linking
+#
+# Define the target processor:
+# 68HC11 -> -m68hc11        [default if no option]
+# 68HC12 -> -m68hc12
+#
+ARCH=m68hc12
+TARGET_PROC=-$(ARCH)
+
+# Define whether you want 16-bit or 32-bit int
+# 16-bits  -> -mshort
+# 32-bits  -> -mnoshort     [default if no option]
+#
+TARGET_INT=-mshort
+
+# Define whether you want symbolic debug or not (debug with gdb):
+# sym-debug  -> -g
+# no-debug   ->
+#
+DEBUG=-g
+
+# Define the optimization you want:
+# Max-speed    ->  -O3 -fomit-frame-pointer       [debug is not possible]
+# Good optim   ->  -Os				  [debug possible]
+# No optim     ->				  [default if no option]
+#
+OPT=-Os
+
+# Generate full warnings
+WARN=-Wall
+
+#
+# End of configuration
+#
+# #########################################################################
+
+INCDIR=$(BASEDIR)/include
+
+INCLUDES=-I. -I$(INCDIR)
+
+DEP_INCLUDES=-I. -I$(INCDIR)
+
+#
+# CPP flags passed during a compilation (include paths)
+#
+CPPFLAGS=$(INCLUDES)
+
+#
+# C flags used by default to compile a program
+#
+CFLAGS=$(TARGET_PROC) $(TARGET_INT) $(WARN) $(DEBUG) $(OPT)
+
+ASFLAGS=$(TARGET_PROC) $(TARGET_INT)
+
+LIBUTIL=$(BASEDIR)/lib/libutil.a
+
+#
+# Libraries (well, only libutil.a for now)
+#
+LIBS=$(LIBUTIL)
+
+
+#
+# LDFLAGS common to all the examples
+#
+DEF_LDFLAGS=$(TARGET_PROC) $(TARGET_INT)  -Wl,-m,m68hc12elfb
+
+#
+# LDFLAGS to use to build a bootstrap program.
+#
+BOOT_PROG_LDFLAGS=-nostdlib -nostartfiles $(DEF_LDFLAGS)
+
+#
+# LDFLAGS used by default if not overriden.
+# Build a normal program for the target board
+#
+LDFLAGS=$(DEF_LDFLAGS)
+
+include $(BASEDIR)/config/board.def
+
+# Setup according to target board 
+include $(BASEDIR)/config/$(BOARD)/make.defs
+
+#
+# .elf is for the simulator and gdb
+# .s19 is for some downloader and the simulator
+# .b   is a binary dump
+#
+#.SUFFIXES: .elf .s19 .b
+
+#
+# Options to creates the .s19 or .b files from the elf
+#
+OBJCOPY_FLAGS=--only-section=.text \
+              --only-section=.rodata \
+	      --only-section=.vectors
+
+
+%.elf : %.o
+	$(CC) $(LDFLAGS) -o $*.elf $< $(LIBS)
+
+
+
+#
+# Rule to create an S19 file from an ELF file.
+#
+%.s19 : %.elf
+	$(OBJCOPY) --output-target=srec  --srec-len 32  $(OBJCOPY_FLAGS) $< $*.s19
+
+#
+# Rule to create an binary dump from an ELF file.
+#
+%.b : %.elf
+	$(OBJCOPY) --output-target=binary $(OBJCOPY_FLAGS) $< $*.b
+
+#all:
+
+.PHONY : clean dist-clean all
+
+all:
+
+clean:
+	$(RM) *.o
+	$(RM) *.elf
+	$(RM) *.s19
+	$(RM) *.b
+	$(RM) *.a
+
+dist-clean:	clean
+	$(RM) m68hc11.ram
+	$(RM) *~
+	$(RM) #*
+@
+
+
+1.3
+log
+@Modernizamos.
+@
+text
+@d144 1
+a144 1
+	$(OBJCOPY) --output-target=srec $(OBJCOPY_FLAGS) $< $*.s19
+@
+
+
+1.2
+log
+@Cambiamos arquitectura y algunos parámetros.
+@
+text
+@d125 1
+a125 1
+.SUFFIXES: .elf .s19 .b
+d135 1
+a135 1
+.o.elf:
+d143 1
+a143 1
+.elf.s19:
+d149 1
+a149 1
+.elf.b:
+d152 1
+a152 1
+all::
+d154 5
+a158 1
+clean::
+d165 1
+a165 1
+dist-clean::	clean
+@
+
+
+1.1
+log
+@Initial revision
+@
+text
+@d7 1
+a7 1
+DEVC_PREFIX=m6811-elf-
+d11 1
+d16 3
+a18 3
+HOST_CC=gcc
+HOST_CFLAGS=-g -O -Wall
+HOST_LDLIBS=-L/usr/local/lib -lbfd -liberty
+d43 1
+a43 1
+ARCH=m68hc11
+d89 1
+a89 1
+ASFLAGS=$(TARGET_PROC)
+d102 1
+a102 1
+DEF_LDFLAGS=$(TARGET_PROC) $(TARGET_INT)
+d134 6
+@

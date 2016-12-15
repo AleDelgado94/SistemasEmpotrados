@@ -1,0 +1,168 @@
+
+#
+# These programs are in general installed under /usr/bin if you
+# installed the RPMS packages and in /usr/local/bin if you build
+# the cross chain yourself.
+#
+DEVC_PREFIX=m68hc11-
+CC=$(DEVC_PREFIX)gcc
+AS=$(DEVC_PREFIX)as
+AR=$(DEVC_PREFIX)ar
+LD=$(DEVC_PREFIX)ld
+SIZE=$(DEVC_PREFIX)size
+OBJCOPY=$(DEVC_PREFIX)objcopy
+RM=rm -f
+
+#HOST_CC=gcc
+#HOST_CFLAGS=-g -O -Wall
+#HOST_LDLIBS=-L/usr/local/lib -lbfd -liberty
+
+# #########################################################################
+# 
+# Before compiling, you can configure the following make variables:
+#
+#   TARGET_PROC
+#   TARGET_INT
+#   DEBUG
+#   OPT
+#   WARN
+#
+# You can also do (as an example):
+#
+#   make TARGET_INT= OPT="-Os -fomit-frame-pointer DEBUG=
+#
+# to avoid to change this file.
+#
+# Configure for a 68hc11 with 16-bit int
+# Make sure to pass these options when compiling AND linking
+#
+# Define the target processor:
+# 68HC11 -> -m68hc11        [default if no option]
+# 68HC12 -> -m68hc12
+#
+ARCH=m68hc12
+TARGET_PROC=-$(ARCH)
+
+# Define whether you want 16-bit or 32-bit int
+# 16-bits  -> -mshort
+# 32-bits  -> -mnoshort     [default if no option]
+#
+TARGET_INT=-mshort
+
+# Define whether you want symbolic debug or not (debug with gdb):
+# sym-debug  -> -g
+# no-debug   ->
+#
+DEBUG=-g
+
+# Define the optimization you want:
+# Max-speed    ->  -O3 -fomit-frame-pointer       [debug is not possible]
+# Good optim   ->  -Os				  [debug possible]
+# No optim     ->				  [default if no option]
+#
+OPT=-Os
+
+# Generate full warnings
+WARN=-Wall
+
+#
+# End of configuration
+#
+# #########################################################################
+
+INCDIR=$(BASEDIR)/include
+
+INCLUDES=-I. -I$(INCDIR)
+
+DEP_INCLUDES=-I. -I$(INCDIR)
+
+#
+# CPP flags passed during a compilation (include paths)
+#
+CPPFLAGS=$(INCLUDES)
+
+#
+# C flags used by default to compile a program
+#
+CFLAGS=$(TARGET_PROC) $(TARGET_INT) $(WARN) $(DEBUG) $(OPT)
+
+ASFLAGS=$(TARGET_PROC) $(TARGET_INT)
+
+LIBUTIL=$(BASEDIR)/lib/libutil.a
+
+#
+# Libraries (well, only libutil.a for now)
+#
+LIBS=$(LIBUTIL)
+
+
+#
+# LDFLAGS common to all the examples
+#
+DEF_LDFLAGS=$(TARGET_PROC) $(TARGET_INT)  -Wl,-m,m68hc12elfb
+
+#
+# LDFLAGS to use to build a bootstrap program.
+#
+BOOT_PROG_LDFLAGS=-nostdlib -nostartfiles $(DEF_LDFLAGS)
+
+#
+# LDFLAGS used by default if not overriden.
+# Build a normal program for the target board
+#
+LDFLAGS=$(DEF_LDFLAGS)
+
+include $(BASEDIR)/config/board.def
+
+# Setup according to target board 
+include $(BASEDIR)/config/$(BOARD)/make.defs
+
+#
+# .elf is for the simulator and gdb
+# .s19 is for some downloader and the simulator
+# .b   is a binary dump
+#
+#.SUFFIXES: .elf .s19 .b
+
+#
+# Options to creates the .s19 or .b files from the elf
+#
+OBJCOPY_FLAGS=--only-section=.text \
+              --only-section=.rodata \
+	      --only-section=.vectors
+
+
+%.elf : %.o
+	$(CC) $(LDFLAGS) -o $*.elf $< $(LIBS)
+
+
+
+#
+# Rule to create an S19 file from an ELF file.
+#
+%.s19 : %.elf
+	$(OBJCOPY) --output-target=srec  --srec-len 32  $(OBJCOPY_FLAGS) $< $*.s19
+
+#
+# Rule to create an binary dump from an ELF file.
+#
+%.b : %.elf
+	$(OBJCOPY) --output-target=binary $(OBJCOPY_FLAGS) $< $*.b
+
+#all:
+
+.PHONY : clean dist-clean all
+
+all:
+
+clean:
+	$(RM) *.o
+	$(RM) *.elf
+	$(RM) *.s19
+	$(RM) *.b
+	$(RM) *.a
+
+dist-clean:	clean
+	$(RM) m68hc11.ram
+	$(RM) *~
+	$(RM) #*

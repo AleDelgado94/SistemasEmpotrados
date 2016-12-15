@@ -1,0 +1,8 @@
+# Axiom Manufacturing CMD12 Board Configuration
+
+ARCH=m68hc12
+
+CPPFLAGS += -DAXIOM_CMD12
+
+# Use memory layout specific to CMD12 board
+LDFLAGS += -L$(BASEDIR)/config/m68hc12-axcmd12

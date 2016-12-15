@@ -1,0 +1,8 @@
+# 68HC11 Axiom Manufacturing CME11E9-EVBU
+
+ARCH=m68hc11
+
+CPPFLAGS +=-DAX_CME11E9
+
+# Use memory layout specific this board
+LDFLAGS += -Wl,-m,$(ARCH)elfb -L$(BASEDIR)/config/$(BOARD)
